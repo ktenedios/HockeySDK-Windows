@@ -17,9 +17,9 @@ namespace HockeyApp
             return (IHockeyClientInternal)@this;
         }
 
-        public static IHockeyClientConfigurable Configure(this IHockeyClient @this, string identifier, bool keepRunningAfterException)
+        public static IHockeyClientConfigurable Configure(this IHockeyClient @this, string identifier, bool keepRunningAfterException, HockeyPlatformHelperWinForms platformHelper = null)
         {
-            @this.AsInternal().PlatformHelper = new HockeyPlatformHelperWinForms();
+            @this.AsInternal().PlatformHelper = platformHelper ?? new HockeyPlatformHelperWinForms();
             @this.AsInternal().AppIdentifier = identifier;
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
@@ -31,6 +31,16 @@ namespace HockeyApp
             TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
 
             return (IHockeyClientConfigurable)@this;
+        }
+
+        public static IHockeyClientConfigurable Configure(this IHockeyClient @this, string identifier, bool keepRunningAfterException, string appPackageName)
+        {
+            if (string.IsNullOrEmpty(appPackageName))
+            {
+                throw new ArgumentNullException("appPackageName");
+            }
+
+            return Configure(@this, identifier, keepRunningAfterException, new HockeyPlatformHelperWinForms { AppPackageName = appPackageName });
         }
 
         static async void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
