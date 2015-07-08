@@ -77,7 +77,12 @@ namespace HockeyApp
             }
 
             using (var fileStream = isoStore.OpenFile((folderName ?? "") + Path.DirectorySeparatorChar + fileName,FileMode.Create,FileAccess.Write)) {
-                await dataStream.CopyToAsync(fileStream);
+                await Task.Run(() =>
+                {
+                    // Using "await dataStream.CopyToAsync(fileStream)" does not work as fileStream.Length returns 0 (i.e. no data recorded in file)
+                    dataStream.CopyTo(fileStream);
+                    fileStream.Flush(true);
+                });
             }
         }
 
